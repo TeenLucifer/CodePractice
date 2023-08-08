@@ -1,7 +1,9 @@
 #include <iostream>
+#include <algorithm>
+#include "code_caprice.h"
 
 int main()
 {
-    std::cout << "你好" << "\n";
+    CodeCarprice* codeCarprice = new CodeCarprice();
     return 0;
 }
