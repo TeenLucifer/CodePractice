@@ -23,6 +23,7 @@
 /* Files includes  -----------------------------------------------------------*/
 #include <iostream>
 #include <vector>
+#include <limits>
 
 /* Defines -------------------------------------------------------------------*/
 
@@ -50,6 +51,9 @@ public:
 
     /*数组*/
     int question704(std::vector<int>& nums, int target);//二分查找
+    int question27(std::vector<int>& nums, int val);//移除元素
+    std::vector<int> question977(std::vector<int>& nums);//有序数组的平方
+    int question209(int target, std::vector<int>& nums);//长度最小的子数组
 private:
 
 };
