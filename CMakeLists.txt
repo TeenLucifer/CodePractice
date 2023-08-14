@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE "Debug")
 
 # 添加可执行文件
-add_executable(main src/main.cpp src/code_caprice.cpp)
+add_executable(main src/main.cpp src/code_caprice.cpp src/real_question.cpp)
 
 #将可执行文件输出到文件夹bin中
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
