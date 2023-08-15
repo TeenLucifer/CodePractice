@@ -21,8 +21,11 @@
 #include <algorithm>
 #include <cstddef>
 #include <limits>
+#include <pthread.h>
+#include <queue>
 #include <random>
 #include <sstream>
+#include <stack>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -795,10 +798,170 @@ std::string CodeCaprice::question58(std::string str, int k)//左旋字符串
 //这里两个KMP方法的题目
 int CodeCaprice::question28(std::string haystack, std::string needle)//找出字符串中第一个匹配项的下标
 {
+    //标准KMP方法做的时候第一步找前缀表，第二步通过前缀表找出字符串中匹配的子串
+    //其实两步都是同一个模式，第二步中相当于把needle和haystack拼起来，然后一个指针从needle开始，另一个从haystack开始，重复第一步中找前缀表的过程
+    //第一步中找前缀表的过程：
+    //0和j组成的子串能够表示i前面的子串
+    //因此每次回退，其实是一个在已搜索过的字符串中找子串的过程
 
+    //找next数组
+    std::vector<int> next(needle.size(), 0);
+    int j = 0;
+
+    for(int i = 1; i < needle.size(); ++i)
+    {
+        while(j > 0 && needle[j] != needle[i])//字符没有匹配上
+        {
+            //回退
+            j = next[j - 1];
+        }
+        if(needle[j] == needle[i])
+        {
+            j++;
+        }
+        next[i] = j;
+    }
+
+    //next数组与haystack匹配
+    j = 0;
+    for(int i = 0; i < haystack.size(); ++i)
+    {
+        while(j > 0 && needle[j] != haystack[i])
+        {
+            j = next[j - 1];
+        }
+        if(needle[j] == haystack[i])
+        {
+            j++;
+        }
+        if(j == needle.size())
+        {
+            return (i - needle.size() + 1);
+        }
+    }
+    return -1;
 }
 
 bool CodeCaprice::question459(std::string str)//给定一个非空的字符串，判断其是否可以通过由它一个子串重复多次构成
 {
+    std::vector<int> next(str.size(), 0);
+    int j = 0;
+    
+    for(int i = 1; i < str.size(); ++i)
+    {
+        while(j > 0 && str[j] != str[i])
+        {
+            j = next[j - 1];
+        }
+        if(str[j] == str[i])
+        {
+            j++;
+        }
+        next[i] = j;
+    }
+    
+    if(next[str.size() - 1] > 0 && (str.size() % (str.size() - next[str.size() - 1]) == 0))
+    {
+        return true;
+    }
 
+    return false;
+}
+
+/*栈与队列*/
+
+namespace code_caprice_question232
+{
+class MyQueue
+{
+private:
+    std::stack<int> stack_in;
+    std::stack<int> stack_out;
+
+public:
+    MyQueue(){}
+    ~MyQueue(){}
+
+    void push(int x)
+    {
+        stack_in.push(x);
+    }
+
+    int pop()
+    {
+        int result = -1;
+        if(stack_out.empty())
+        {
+            while(!stack_in.empty())
+            {
+                stack_out.push(stack_in.top());
+                stack_in.pop();
+            }
+        }
+        result = stack_out.top();
+        stack_in.pop();
+        return result;
+    }
+
+    int peek()
+    {
+        if(stack_out.empty())
+        {
+            while(!stack_in.empty())
+            {
+                stack_out.push(stack_in.top());
+                stack_in.pop();
+            }
+        }
+        return stack_out.top();
+    }
+
+    bool empty()
+    {
+        return stack_in.empty() && stack_out.empty();
+    }
+};
+}
+
+namespace code_caprice_question225
+{
+class MyStack
+{
+private:
+    std::queue<int> que;
+public:
+    MyStack(){}
+    ~MyStack(){}
+
+    void push(int x)
+    {
+        que.push(x);
+    }
+
+    int pop()
+    {
+        int que_size = que.size() - 1;
+        int result = -1;
+
+        while(que_size--)
+        {
+            que.push(que.front());
+            que.pop();
+        }
+        result = que.front();
+        que.pop();
+
+        return result;
+    }
+
+    int top()
+    {
+        return que.back();
+    }
+
+    bool empty()
+    {
+        return que.empty();
+    }
+};
 }

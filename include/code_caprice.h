@@ -28,6 +28,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <algorithm>
+#include <stack>
+#include <queue>
 
 #include "headers.h"
 
@@ -90,6 +92,10 @@ public:
     std::string question58(std::string str, int k);//左旋字符串
     int question28(std::string haystack, std::string needle);//找出字符串中第一个匹配项的下标
     bool question459(std::string str);//给定一个非空的字符串，判断其是否可以通过由它一个子串重复多次构成
+
+    /*栈与队列*/
+    //question232用栈实现队列
+    //question225用队列实现栈
 private:
 
 };
