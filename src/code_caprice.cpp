@@ -19,7 +19,10 @@
 /* Define to prevent recursive inclusion  ------------------------------------*/
 #include "headers.h"
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
+#include <cstdlib>
+#include <iterator>
 #include <limits>
 #include <pthread.h>
 #include <queue>
@@ -964,4 +967,253 @@ public:
         return que.empty();
     }
 };
+}
+
+
+bool CodeCaprice::question20(std::string str)//有效的括号
+{
+    if(str.size() % 2 != 0) return false;
+    std::stack<char> stk;
+
+    for(char ch : str)
+    {
+        if(ch == '(') stk.push(')');
+        else if(ch == '[') stk.push(']');
+        else if(ch == '{') stk.push('}');
+        //下面是找到右括号的情况
+        else if(stk.empty() || stk.top() != ch) return false;//这里栈为空表示没有对应的左括号；栈不为空但是栈顶元素不是对应的左括号表示括号不匹配
+        else stk.pop();//栈不为空且栈顶元素是对应的左括号，表示匹配，弹出栈顶元素
+    }
+    return stk.empty();//最后栈为空表示所有的左括号都匹配上了；若栈不为空表示有多余的左括号
+}
+
+std::string CodeCaprice::question1047(std::string str)//删除字符串中的所有相邻重复项
+{
+    std::string result;
+    std::stack<char> stk;
+    for(char ch : str)
+    {
+        if(!stk.empty() && stk.top() == ch) stk.pop();
+        else stk.push(ch);
+    }
+    while(!stk.empty())
+    {
+        result.push_back(stk.top());
+        stk.pop();
+    }
+
+    std::reverse(result.begin(), result.end());
+    return result;
+}
+
+int CodeCaprice::question150(std::vector<std::string>& tokens)//逆波兰表达式求值
+{//什么是逆波兰表达式：后缀表达式，运算符在操作数的后面
+    std::stack<std::string> stk;
+    for(std::string str : tokens)
+    {
+        if(str == "+" || str == "-" || str == "*" || str == "/")
+        {
+            std::string str_num1 = "";
+            std::string str_num2 = "";
+            long long num1 = 0;
+            long long num2 = 0;
+            long long num_tmp = 0;
+            std::string str_num_tmp = "";
+            str_num1 = stk.top();
+            stk.pop();
+            str_num2 = stk.top();
+            stk.pop();
+            //str2num
+            int i = 0;
+            if(str_num1[0] == '-') i = 1;
+            for(; i < str_num1.size(); ++i)
+            {
+                num1 = num1 + str_num1[i] - '0';
+                if(i != str_num1.size() - 1) num1 = num1 * 10;
+            }
+            if(str_num1[0] == '-') num1 = -num1;
+
+            i = 0;
+            if(str_num2[0] == '-') i = 1;
+            for(; i < str_num2.size(); ++i)
+            {
+                num2 = num2 + str_num2[i] - '0';
+                if(i != str_num2.size() - 1) num2 = num2 * 10;
+            }
+            if(str_num2[0] == '-') num2 = -num2;
+
+            if(str == "+") num_tmp = num2 + num1;
+            else if(str == "-") num_tmp = num2 - num1;
+            else if(str == "*") num_tmp = num2 * num1;
+            else if(str == "/") num_tmp = num2 / num1;
+            //num2str
+            long long num_ = std::abs(num_tmp);
+            while(num_ > 0)
+            {
+                str_num_tmp.push_back((num_ % 10) + '0');
+                num_ = num_ / 10;
+            }
+            if(num_tmp < 0) str_num_tmp.push_back('-');
+            std::reverse(str_num_tmp.begin(), str_num_tmp.end());
+            stk.push(str_num_tmp);
+        }
+        else
+            stk.push(str);
+    }
+    std::string str_final = "";
+    long long num_final = 0;
+    if(stk.size() == 1)
+    {
+        //str2num
+        str_final = stk.top();
+
+        int i = 0;
+        if(str_final[0] == '-') i = 1;
+        for(; i < str_final.size(); ++i)
+        {
+            num_final = num_final + str_final[i] - '0';
+            if(i != str_final.size() - 1) num_final = num_final * 10;
+        }       
+        if(str_final[0] == '-') num_final = -num_final;
+    }
+    return num_final;
+}
+
+std::vector<int> CodeCaprice::question239(std::vector<int>& nums, int k)//滑动窗口最大值
+{
+    std::vector<int> result;
+    std::deque<int> que;
+
+    //que中存储的是nums中的下标，que中的下标对应的nums中的值是递减的
+    for(int i = 0; i < nums.size(); ++i)
+    {
+        while(!que.empty() && nums[que.back()] < nums[i])//这里保证了que中的下标对应的nums中的值是递减的
+        {
+            que.pop_back();
+        }
+        que.push_back(i);
+        if(que.front() == i - k)//这里表示在滑动窗口范围内，没有比que.frone()表示的下标大的数了，但是滑动窗口需要走，手动把front更新掉
+        {
+            que.pop_front();
+        }
+        if(i >= k - 1)
+        {
+            result.push_back(nums[que.front()]);
+        }
+    }
+
+    return result;
+}
+
+
+std::vector<int> CodeCaprice::question347(std::vector<int>& nums, int k)//第k个高频元素
+{
+    std::unordered_map<int, int> map;
+    std::vector<std::pair<int, int>> pairs;
+    std::vector<int> result;
+    for(int i = 0; i < nums.size(); ++i)
+    {
+        map[nums[i]]++;
+    }
+    for(std::pair<int, int> pair : map)
+    {
+        pairs.push_back(pair);
+    }
+    std::sort(pairs.begin(), pairs.end(), [](const std::pair<int, int>& pair1, const std::pair<int, int>& pair2){return pair1.second > pair2.second;});
+    for(int i = 0; i < k; ++i)
+    {
+        result.push_back(pairs[i].first);
+    }
+    return result;
+}
+
+void CodeCaprice::helper144(TreeNode* root, std::vector<int>& result)
+{
+    if(root == nullptr)
+        return;
+    result.push_back(root->val);
+    if(root->left != nullptr) helper144(root->left, result);
+    if(root->right != nullptr) helper144(root->right, result);
+}
+
+std::vector<int> CodeCaprice::question144(TreeNode* root)//二叉树的前序遍历
+{
+    std::vector<int> result;
+    helper144(root, result);
+    return result;
+}
+
+void CodeCaprice::helper145(TreeNode* root, std::vector<int>& result)
+{
+    if(root == nullptr)
+        return;
+    if(root->left != nullptr) helper145(root->left, result);
+    if(root->right != nullptr) helper145(root->right, result);
+    result.push_back(root->val);
+}
+
+std::vector<int> CodeCaprice::question145(TreeNode* root)//二叉树的后序遍历
+{
+    std::vector<int> result;
+    helper145(root, result);
+    return result;
+}
+
+void CodeCaprice::helper94(TreeNode* root, std::vector<int>& result)
+{
+    if(root == nullptr)
+        return;
+    if(root->left != nullptr) helper94(root->left, result);
+    result.push_back(root->val);
+    if(root->right != nullptr) helper94(root->right, result);
+}
+
+std::vector<int> CodeCaprice::question94(TreeNode* root)//二叉树的中序遍历
+{
+    std::vector<int> result;
+    helper94(root, result);
+    return result;
+}
+
+
+std::vector<std::vector<int>> CodeCaprice::question102(TreeNode* root)//二叉树的层序遍历
+{
+    std::vector<std::vector<int>> result;
+    std::queue<TreeNode*> que;
+    if(root == nullptr)
+        return result;
+    que.push(root);
+    while(!que.empty())
+    {
+        int n = que.size();
+        std::vector<int> level;
+        for(int i = 0; i < n; ++i)
+        {
+            TreeNode* node = que.front();
+            que.pop();
+            level.push_back(node->val);
+            if(node->left != nullptr) que.push(node->left);
+            if(node->right != nullptr) que.push(node->right);
+        }
+        result.push_back(level);
+    }
+    return result;
+}
+
+void CodeCaprice::helper226(TreeNode* root)
+{
+    if(root == nullptr)
+        return;
+    TreeNode* tree_left = root->left;
+    TreeNode* tree_right = root->right;
+    root->left = tree_right;
+    root->right = tree_left;
+    helper226(root->left);
+    helper226(root->right);
+}
+
+TreeNode* CodeCaprice::question226(TreeNode* root)//翻转二叉树
+{
+    helper226(root);
+    return root;
 }

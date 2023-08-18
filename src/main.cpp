@@ -7,7 +7,6 @@
 int main()
 {
     CodeCaprice* codeCarprice = new CodeCaprice();
-    codeCarprice->question28("mississippi", "issip");
-
+    
     return 0;
 }

@@ -96,6 +96,22 @@ public:
     /*栈与队列*/
     //question232用栈实现队列
     //question225用队列实现栈
+    bool question20(std::string str);//有效的括号
+    std::string question1047(std::string str);//删除字符串中的所有相邻重复项
+    int question150(std::vector<std::string>& tokens);//逆波兰表达式求值
+    std::vector<int> question239(std::vector<int>& nums, int k);//滑动窗口最大值
+    std::vector<int> question347(std::vector<int>& nums, int k);//第k个高频元素
+
+    /*二叉树*/
+    void helper144(TreeNode* root, std::vector<int>& result);
+    void helper145(TreeNode* root, std::vector<int>& result);
+    void helper94(TreeNode* root, std::vector<int>& result);
+    std::vector<int> question144(TreeNode* root);//二叉树的前序遍历
+    std::vector<int> question145(TreeNode* root);//二叉树的后序遍历
+    std::vector<int> question94(TreeNode* root);//二叉树的中序遍历
+    std::vector<std::vector<int>> question102(TreeNode* root);//二叉树的层序遍历
+    void helper226(TreeNode* root);
+    TreeNode* question226(TreeNode* root);//翻转二叉树
 private:
 
 };
