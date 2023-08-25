@@ -21,7 +21,9 @@
 #define __HEADERS_H
 
 /* Files includes  -----------------------------------------------------------*/
-
+#include <utility>
+#include <vector>
+#include <unordered_map>
 
 /* Defines -------------------------------------------------------------------*/
 
@@ -41,6 +43,8 @@
 #undef GLOBAL
 
 /* Functions ----------------------------------------------------------------*/
+class GraphEdge;
+class GraphNode;
 
 /**
  * Definition for singly-linked list.
@@ -61,6 +65,59 @@ struct TreeNode
     TreeNode(): val(0), left(nullptr), right(nullptr){}
     TreeNode(int x): val(x), left(nullptr), right(nullptr){}
     TreeNode(int x, TreeNode* left, TreeNode* right): val(x), left(left), right(right){}
+};
+
+#include <iostream>
+#include <vector>
+
+class GraphEdge {
+public:
+    int neighbor; // 邻居节点的标识
+    int weight;   // 边的权重，如果不需要权重可以省略
+
+    GraphEdge(int n, int w = 1) : neighbor(n), weight(w) {}
+};
+
+class GraphNode {
+public:
+    int id;
+    int val;
+    int cost;
+    bool visited = false;
+    std::vector<GraphEdge> neighbors; // 存储邻居节点和边
+
+    GraphNode(int _id, int _val, int _cost) : id(_id), val(_val), cost(_cost) {}
+};
+
+class UndirectedGraph {
+public:
+    std::vector<GraphNode*> nodes;
+
+    void add_node(int id, int val, int cost)
+    {
+        nodes.push_back(new GraphNode(id, val, cost));
+    }
+
+    void add_edge(int src_id, int dest_id, int weight = 1)
+    {
+        for (GraphNode* node : nodes)
+        {
+            if (node->id == src_id)
+                node->neighbors.emplace_back(dest_id, weight);
+            if (node->id == dest_id)
+                node->neighbors.emplace_back(src_id, weight); // 无向图只需添加一次边
+        }
+    }
+
+    GraphNode* get_node(int id)
+    {
+        for (GraphNode* node : nodes) 
+        {
+            if (node->id == id) 
+                return node;
+        }
+        return nullptr;
+    }
 };
 
 #endif

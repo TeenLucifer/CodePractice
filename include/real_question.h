@@ -22,6 +22,10 @@
 
 /* Files includes  -----------------------------------------------------------*/
 #include <iostream>
+#include <iterator>
+#include <ostream>
+#include <string>
+#include <type_traits>
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
@@ -50,8 +54,26 @@ class RealQuestion
 public:
     RealQuestion(){}
     ~RealQuestion(){}
+    void dajiang1();
+    void dajiang2();
+    void mihayou1();
+    void mihayou2();
+    void mihayou3();
+    void xiaohongshu1();//小红背单词
+    bool is_palindrome(std::string str);//判断是否为回文串
+    void xiaohongshu2();
+    void xiaohongshu3();
+    void meituan1();
+    void meituan2();
+    void meituan3();
+    void meituan4();
+    void meituan5();
+    void dewu1();
+    void dewu_helper2(std::vector<int>& nums, int& min_len, std::vector<int>& path, int target, int sum, int start_idx);
+    void dewu2(); 
 
-    void question1();
+    void weilai1();
+    int weilai3(std::vector<std::vector<int>>& grid);
 private:
 
 };

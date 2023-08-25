@@ -17,13 +17,17 @@
 ------------------------------------------------------------------------------*/
 
 /* Define to prevent recursive inclusion  ------------------------------------*/
-#include "headers.h"
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
+#include <iomanip>
+#include <iostream>
 #include <iterator>
 #include <limits>
+#include <map>
+#include <mutex>
+#include <ostream>
 #include <pthread.h>
 #include <queue>
 #include <random>
@@ -37,6 +41,7 @@
 #define _CODE_CAPRICE_C_
 
 /* Files includes  -----------------------------------------------------------*/
+#include "headers.h"
 #include "code_caprice.h"
 
 /*----------------------------------------------------------------------------*/
@@ -1216,4 +1221,840 @@ TreeNode* CodeCaprice::question226(TreeNode* root)//翻转二叉树
 {
     helper226(root);
     return root;
+}
+
+bool CodeCaprice::helper101(TreeNode* tree_left, TreeNode* tree_right)
+{
+    if(tree_left == nullptr && tree_right == nullptr) return true;
+    if(tree_left == nullptr && tree_right != nullptr) return false;
+    if(tree_left != nullptr && tree_right == nullptr) return false;
+    if(tree_left->val != tree_right->val) return false;
+
+    bool res1 = helper101(tree_left->left, tree_right->right);
+    bool res2 = helper101(tree_left->right, tree_right->left);
+    if(res1 == true && res2 == true) return true;
+
+    return false;
+}
+
+bool CodeCaprice::question101(TreeNode* root)//对称二叉树
+{
+    return helper101(root->left, root->right);
+}
+
+int CodeCaprice::helper104(TreeNode* root)
+{
+    if(root == nullptr) return 0;
+    int depth_left = helper104(root->left);
+    int depth_right = helper104(root->right);
+    int depth = 1 + std::max(depth_left, depth_right);
+    return depth;
+}
+
+int CodeCaprice::question104(TreeNode* root)//二叉树的最大深度
+{
+    return helper104(root);
+}
+
+int CodeCaprice::helper111(TreeNode* root)
+{
+    if(root == nullptr) return 0;
+    int depth_left = helper111(root->left);
+    int depth_right = helper111(root->right);
+    if(root->left == nullptr) return 1 + depth_right;
+    if(root->right == nullptr) return 1 + depth_left;
+
+    return 1 + std::min(depth_left, depth_right);
+}
+
+int CodeCaprice::question111(TreeNode* root)//二叉树的最小深度
+{
+    return helper111(root);
+}
+
+
+int CodeCaprice::question222(TreeNode* root)//完全二叉树的节点个数
+{
+    if(root == nullptr)
+        return 0;
+    int result = 0;
+    std::queue<TreeNode*> que; 
+    que.push(root);
+
+    while(!que.empty())
+    {
+        int que_size = que.size();
+        for(int i = 0; i < que_size; ++i)
+        {
+            TreeNode* node = que.front();
+            que.pop();
+            if(node->left != nullptr) que.push(node->left);
+            if(node->right != nullptr) que.push(node->right);
+            result++;
+        }
+    }
+
+    return result;
+}
+
+int CodeCaprice::helper110(TreeNode* root)
+{
+    if(root == nullptr)
+        return 0;
+    
+    int height_left = helper110(root->left);
+    if(height_left == -1) return -1;
+    int height_right = helper110(root->right);
+    if(height_right == -1) return -1;
+
+    return std::abs(height_left - height_right) > 1 ? -1 : 1 + std::max(height_left, height_right);
+}
+
+bool CodeCaprice::question110(TreeNode* root)//平衡二叉树
+{
+    return helper110(root) == - 1 ? false : true;
+}
+
+void CodeCaprice::helper257(TreeNode* root, std::vector<std::vector<int>>& paths, std::vector<int>& path)
+{
+    path.push_back(root->val);
+    if(root->left == nullptr && root->right == nullptr)
+        paths.push_back(path);
+
+    if(root->left != nullptr) helper257(root->left, paths, path);
+    if(root->right != nullptr) helper257(root->right, paths, path);
+    path.pop_back();
+}
+
+std::vector<std::string> CodeCaprice::question257(TreeNode* root)//二叉树的所有路径
+{
+    std::vector<std::string> result;
+    std::vector<std::vector<int>> paths;
+    std::vector<int> path;
+    if(root == nullptr)
+        return result;
+    path.push_back(root->val);
+    if(root->left == nullptr && root->right == nullptr)
+        paths.push_back(path);
+    if(root->left != nullptr) helper257(root->left, paths, path);
+    if(root->right != nullptr) helper257(root->right, paths, path);
+
+    for(int i = 0; i < paths.size(); ++i)
+    {
+        std::string str;
+        str += std::to_string(paths[i][0]);
+        for(int j = 1; j < paths[i].size(); ++j)
+        {
+            str += "->";
+            str += std::to_string(paths[i][j]);
+        }
+        result.push_back(str);
+    }
+
+    return result;
+}
+
+int CodeCaprice::helper404(TreeNode* root)
+{
+    if(root->left == nullptr && root->right == nullptr)
+        return 0;
+    if(root->left != nullptr && root->left->left == nullptr && root->left->right == nullptr)
+        return root->left->val;
+
+    int sum_left = 0;
+    int sum_right = 0;
+    if(root->left != nullptr) sum_left = helper404(root->left);
+    if(root->right != nullptr) sum_right = helper404(root->right);
+
+    return sum_left + sum_right;
+}
+
+int CodeCaprice::question404(TreeNode* root)//左叶子之和
+{
+    if(root == nullptr)
+        return 0;
+    return helper404(root);
+}
+
+
+int CodeCaprice::question513(TreeNode* root)//找树左下角的值
+{
+    std::queue<TreeNode*> que; 
+    std::vector<std::vector<int>> levels;
+    
+    que.push(root);
+
+    while(!que.empty())
+    {
+        int que_size = que.size();
+        std::vector<int> level;
+        for(int i = 0; i < que_size; ++i)
+        {
+            TreeNode* node = que.front();
+            level.push_back(node->val);
+            que.pop();
+            if(node->left != nullptr) que.push(node->left);
+            if(node->right != nullptr) que.push(node->right);
+        }
+        levels.push_back(level);
+    }
+    return levels[levels.size() - 1][0];
+}
+
+
+void CodeCaprice::helper112(TreeNode* root, int& targetSum, bool& result)
+{
+    if(result == true) return;
+    if(root->left == nullptr && root->right == nullptr)
+    {
+        if(targetSum == 0) result = true;
+        return;
+    }
+    
+    if(root->left != nullptr)
+    {
+        targetSum = targetSum - root->left->val;
+        helper112(root->left, targetSum, result);
+        targetSum = targetSum + root->left->val;
+    }
+    if(root->right != nullptr)
+    {
+        targetSum = targetSum - root->right->val;
+        helper112(root->right, targetSum, result);
+        targetSum = targetSum + root->right->val;
+    }
+
+    return;
+}
+
+bool CodeCaprice::question112(TreeNode* root, int targetSum)//路径总和
+{
+    bool result = false;
+    helper112(root, targetSum, result);
+    return result;
+}
+
+
+
+TreeNode* CodeCaprice::helper106(std::vector<int>& inorder, int in_start, int in_end, std::vector<int>& postorder, int post_start, int post_end)
+{
+    if(in_start > in_end || post_start > post_end)
+        return nullptr;
+
+    int root_val = postorder[post_end];
+    TreeNode* root = new TreeNode(root_val);
+    int in_start_left = in_start;
+    int in_end_left = 0;
+    int in_start_right = 0;
+    int in_end_right = in_end;
+    for(int i = 0; i < inorder.size(); ++i)
+    {
+        if(inorder[i] == root_val)
+        {
+            in_end_left = i - 1;
+            in_start_right = i + 1;
+        }
+    }
+    int post_start_left = post_start;
+    int post_end_left = post_start + in_end_left - in_start_left;
+    int post_start_right = post_end - 1 - (in_end_right - in_start_right);
+    int post_end_right = post_end - 1;
+
+    root->left = helper106(inorder, in_start_left, in_end_left, postorder, post_start_left, post_end_left);
+    root->right = helper106(inorder, in_start_right, in_end_right, postorder, post_start_right, post_end_right);
+
+    return root;
+}
+
+TreeNode* CodeCaprice::question106(std::vector<int>& inorder, std::vector<int>& postorder)//从中序遍历和后序遍历构造二叉树
+{
+    TreeNode* root = helper106(inorder, 0, inorder.size() - 1, postorder, 0, postorder.size() - 1);
+    return root;
+}
+
+TreeNode* CodeCaprice::helper654(std::vector<int>& nums, int start, int end)
+{
+    if(start > end)
+        return nullptr;
+    int root_idx = 0;
+    int root_val = std::numeric_limits<int>::min();
+    for(int i = start; i <= end; ++i)
+    {
+        if(nums[i] > root_val)
+        {
+            root_idx = i;
+            root_val = nums[i];
+        }
+    }
+    TreeNode* root = new TreeNode(root_val);
+    root->left = helper654(nums, start, root_idx - 1);
+    root->right = helper654(nums, root_idx + 1, end);
+
+    return root;
+}
+
+TreeNode* CodeCaprice::question654(std::vector<int>& nums)//最大二叉树
+{
+    TreeNode* root = helper654(nums, 0, nums.size() - 1);
+    return root;
+}
+
+TreeNode* CodeCaprice::helper617(TreeNode* root1, TreeNode* root2)
+{
+    TreeNode* node_this = nullptr;
+    if(root1 == nullptr && root2 == nullptr) 
+        return nullptr;
+
+    if(root1 != nullptr && root2 != nullptr) 
+    {
+        node_this = new TreeNode(root1->val + root2->val);
+        node_this->left = helper617(root1->left, root2->left);
+        node_this->right = helper617(root1->right, root2->right);
+    }
+    if(root1 != nullptr && root2 == nullptr) 
+    {
+        node_this = new TreeNode(root1->val);
+        node_this->left = helper617(root1->left, nullptr);
+        node_this->right = helper617(root1->right, nullptr);
+    }
+    if(root1 == nullptr && root2 != nullptr)
+    {
+        node_this = new TreeNode(root2->val);
+        node_this->left = helper617(nullptr, root2->left);
+        node_this->right = helper617(nullptr, root2->right);
+    }
+
+    return node_this;
+}
+
+TreeNode* CodeCaprice::question617(TreeNode* root1, TreeNode* root2)//合并二叉树
+{
+    TreeNode* root = helper617(root1, root2);
+    return root;
+}
+
+TreeNode* CodeCaprice::helper700(TreeNode* root, int& val)
+{
+    if(root == nullptr) return nullptr;
+    if(root->val == val) return root;
+    else if(root->val > val) return helper700(root->left, val);
+    else if(root->val < val) return helper700(root->right, val);
+
+    return nullptr;
+}
+
+TreeNode* CodeCaprice::question700(TreeNode* root, int val)//二叉搜索树中的搜索
+{
+    return helper700(root, val);
+}
+
+bool CodeCaprice::helper98(TreeNode* root, long long& max_val)
+{
+    if(root == nullptr)
+        return true;
+    bool left = helper98(root->left, max_val);
+    if(max_val < root->val) max_val = root->val;
+    else return false;
+    bool right = helper98(root->right, max_val);
+    return left && right;
+}
+
+bool CodeCaprice::question98(TreeNode* root)//验证二叉搜索树
+{
+    long long max_val = std::numeric_limits<long long>::min();
+    return helper98(root, max_val);
+}
+
+void CodeCaprice::helper530(TreeNode* root, std::vector<int>& inorder)
+{
+    if(root == nullptr)
+        return;
+    helper530(root->left, inorder);
+    inorder.push_back(root->val);
+    helper530(root->right, inorder);
+}
+
+int CodeCaprice::question530(TreeNode* root)//二叉搜索树的最小绝对差
+{
+    int min_val = std::numeric_limits<int>::max();
+    std::vector<int> inorder;
+    helper530(root, inorder);
+    for(int i = 0; i < inorder.size() - 1; ++i)
+    {
+        min_val = std::min(min_val, inorder[i + 1] - inorder[i]);
+    }
+    return min_val;
+}
+
+void CodeCaprice::helper501(TreeNode* root, std::unordered_map<int, int>& map)
+{
+    if(root == nullptr)
+        return;
+    helper501(root->left, map);
+    map[root->val]++;
+    helper501(root->right, map);
+}
+
+std::vector<int> CodeCaprice::question501(TreeNode* root)//二叉搜索树中的众数
+{
+    std::unordered_map<int, int> map;
+    std::vector<std::pair<int, int>> vec;
+    std::vector<int> result;
+    int max_cnt = std::numeric_limits<int>::min();
+    helper501(root, map);
+    for(std::pair<int, int> iter : map)
+        vec.push_back(iter);
+    std::sort(vec.begin(), vec.end(), [](std::pair<int, int>& pair1, std::pair<int, int>& pair2){
+        return pair1.second > pair2.second;
+    });
+    for(auto iter : vec)
+        if(iter.second == vec.begin()->second) result.push_back(iter.first);
+        else break;
+    
+    return result;
+}
+
+TreeNode* CodeCaprice::helper236(TreeNode* root, TreeNode* p, TreeNode* q)
+{
+    if(root == p || root == q || root == nullptr) return root;
+    TreeNode* left_node = helper236(root->left, p, q);
+    TreeNode* right_node = helper236(root->right, p, q);
+    if(left_node != nullptr && right_node != nullptr) return root;
+    if(left_node != nullptr && right_node == nullptr) return left_node;
+    if(left_node == nullptr && right_node != nullptr) return right_node;
+
+    return nullptr;
+}
+
+TreeNode* CodeCaprice::question236(TreeNode* root, TreeNode* p, TreeNode* q)//二叉树的最近公共祖先
+{
+    return helper236(root, p, q);
+}
+
+/*回溯*/
+
+void CodeCaprice::helper77(std::vector<std::vector<int>>& result, std::vector<int>& path, int& n, int& k, int start_idx)
+{
+    if(path.size() == k)
+    {
+        result.push_back(path);
+        return;
+    }
+
+    for(int i = start_idx; i <= n; ++i)
+    {
+        path.push_back(i);
+        helper77(result, path, n, k, i + 1);
+        path.pop_back();
+    }
+}
+
+std::vector<std::vector<int>> CodeCaprice::question77(int n, int k)//组合
+{
+    std::vector<std::vector<int>> result;
+    std::vector<int> path;
+    helper77(result, path, n, k, 1);
+    return result;
+}
+
+void CodeCaprice::helper216(std::vector<std::vector<int>>& result, std::vector<int>& path, int n, int k, int start_idx)
+{
+    if(path.size() == k && n == 0)
+    {
+        result.push_back(path);
+        return;
+    }
+
+    for(int i = start_idx; i <= 9; ++i)
+    {
+        path.push_back(i);
+        helper216(result, path, n - i, k, i + 1);
+        path.pop_back();
+    }
+}
+
+std::vector<std::vector<int>> CodeCaprice::question216(int n, int k)//组合总和III
+{
+    std::vector<std::vector<int>> result;
+    std::vector<int> path;
+    helper216(result, path, n, k, 1);
+    return result;
+}
+
+void CodeCaprice::helper17(std::unordered_map<char, std::string>& map, std::vector<std::string>& result, std::string& path, std::string& digits, int start_idx)
+{
+    if(path.size() == digits.size())
+    {
+        result.push_back(path);
+        return;
+    }
+    
+    char num = digits[start_idx];
+    for(char ch : map[num])
+    {
+        path.push_back(ch);
+        helper17(map, result, path, digits, start_idx + 1);
+        path.pop_back();
+    }
+}
+
+std::vector<std::string> CodeCaprice::question17(std::string digits)//电话号码的字母组合
+{
+    std::vector<std::string> result;
+    std::string path;
+    std::unordered_map<char, std::string> map;
+    map['2'] = "abc";
+    map['3'] = "def";
+    map['4'] = "ghi";
+    map['5'] = "jkl";
+    map['6'] = "mno";
+    map['7'] = "pqrs";
+    map['8'] = "tuv";
+    map['9'] = "wxyz";
+    helper17(map, result, path, digits, 0);
+
+    return result;
+}
+
+
+int CodeCaprice::question455(std::vector<int>& g, std::vector<int>& s)//分发饼干
+{
+    int result = 0;
+    int index = s.size() - 1;
+
+    std::sort(g.begin(), g.end());
+    std::sort(s.begin(), s.end());
+
+    for(int i = g.size() - 1; i >= 0; --i)
+    {
+        if(index >= 0 && s[index] >= g[i])
+        {
+            index--;
+            result++;
+        }
+    }
+
+    return result;
+}
+
+int CodeCaprice::question1005(std::vector<int>& nums, int k)//K次取反后最大化的数组和
+{
+    int sum = 0;
+    std::sort(nums.begin(), nums.end(), [](int& a, int& b)
+    {
+        return std::abs(a) > std::abs(b);
+    });
+    for(int i = 0; i < nums.size(); ++i)
+    {
+        if(nums[i] < 0 && k > 0)
+        {
+            k--;
+            nums[i] = -nums[i];
+        }
+    }
+    if(k % 2 == 1) nums[nums.size() - 1] *= -1;
+    for(int num : nums) sum += num;
+
+    return sum;
+}
+
+
+bool CodeCaprice::question860(std::vector<int>& bills)//柠檬水找零
+{
+    bool result = true;
+    std::unordered_map<int, int> map;
+
+    for(int bill : bills)
+    {
+        if(bill == 5)
+        {
+            //do nothing
+        }
+        else if(bill == 10)
+        {
+            if(map[5] > 0) map[5]--;
+            else result = false;
+        }
+        else if(bill == 20)
+        {
+            if(map[5] > 0 && map[10] > 0)
+            {
+                map[5]--;
+                map[10]--;
+            }
+            else if(map[5] > 2)
+            {
+                map[5] -= 3;
+            }
+            else
+                result = false;
+        }
+        map[bill]++;
+    }
+    return result;
+}
+
+
+int CodeCaprice::question376(std::vector<int>& nums)//摆动序列
+{
+    std::vector<std::vector<int>> dp(nums.size(), std::vector<int>(2, 0));
+    dp[0][0] = dp[0][1] = 1;
+    for(int i = 1; i < nums.size(); ++i)
+    {
+        dp[i][0] = dp[i][1] = 1;
+        for(int j = 0; j < i; ++j)
+        {
+            if(nums[i] < nums[j])
+                dp[i][0] = std::max(dp[i][0], dp[j][1] + 1);
+            if(nums[i] > nums[j])
+                dp[i][1] = std::max(dp[i][1], dp[j][0] + 1);
+        }
+    }
+    return std::max(dp[nums.size() - 1][0], dp[nums.size() - 1][1]);
+}
+
+int CodeCaprice::helper738(std::vector<int>& nums, int start, int end)
+{
+    for(int i = 0; i < end; ++i)
+        if(nums[i] > nums[i + 1])
+            return i;
+    return -1;
+}
+
+int CodeCaprice::question738(int n)//单调递增的数字
+{
+    int n_tmp = n;
+    int result = 0;
+    std::vector<int> nums;
+    while(n_tmp > 0)
+    {
+        nums.push_back(n_tmp % 10);
+        n_tmp /= 10;
+    }
+    std::reverse(nums.begin(), nums.end());
+
+    int end = nums.size() - 1;
+    int not_single_idx = end;
+    not_single_idx = helper738(nums, 0, end);
+    while(not_single_idx != -1)
+    {
+        nums[not_single_idx] -= 1;
+        for(int i = not_single_idx + 1; i <= end; ++i)
+        {
+            nums[i] = 9;
+        }
+        end = not_single_idx;
+        not_single_idx = helper738(nums, 0, not_single_idx);
+    }
+
+    for(int i = 0; i < nums.size(); ++i)
+    {
+        for(int j = 0; j < i; ++j)
+        {
+            nums[nums.size() - 1 - i] = nums[nums.size() - 1 - i] * 10;
+        }
+        result += nums[nums.size() - 1 - i];
+    }
+    return result;
+}
+
+
+int CodeCaprice::question122(std::vector<int>& prices)//买卖股票的最佳时机
+{
+    int result = 0;
+
+    for(int i = 0; i < prices.size() - 1; ++i)
+    {
+        result += std::max(prices[i + 1] - prices[i], 0);
+    }
+    return result;
+}
+
+int CodeCaprice::question135(std::vector<int>& ratings)//分发糖果
+{
+    std::vector<int> candyVec(ratings.size(), 1);
+     // 从前向后
+     for (int i = 1; i < ratings.size(); i++) {
+         if (ratings[i] > ratings[i - 1]) candyVec[i] = candyVec[i - 1] + 1;
+     }
+     // 从后向前
+     for (int i = ratings.size() - 2; i >= 0; i--) {
+         if (ratings[i] > ratings[i + 1] ) {
+             candyVec[i] = std::max(candyVec[i], candyVec[i + 1] + 1);
+         }
+     }
+     // 统计结果
+     int result = 0;
+     for (int i = 0; i < candyVec.size(); i++) result += candyVec[i];
+     return result;
+}
+
+std::vector<std::vector<int>> CodeCaprice::question406(std::vector<std::vector<int>>& people)//根据身高重建队列
+{
+    std::vector<std::vector<int>> result;
+    std::sort(people.begin(), people.end(), [](std::vector<int>& people1, std::vector<int>& people2){
+        if(people1[0] == people1[0]) return people1[1] < people2[1];
+        return people1[0] > people2[0];
+    });
+    for(int i = 0; i < people.size(); ++i)
+    {
+        int positon = people[i][1];
+        result.insert(result.begin() + positon, people[i]);
+    }
+    return result;
+}
+
+/*动态规划*/
+int CodeCaprice::question509(int n)//斐波那契数列
+{
+    if(n == 0) return 0;
+    std::vector<int> dp(n + 1, 0);
+    dp[0] = 0;
+    dp[1] = 1;
+    for(int i = 2; i < n; ++i)
+    {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+    return dp[n];
+}
+
+int CodeCaprice::question70(int n)//爬楼梯
+{
+    //1.确定dp数组含义: dp[i]表示爬i阶楼梯共有几种方法
+    //2.确定递推公式: dp[i] = dp[i - 1] + dp[i - 2]; 爬楼梯可以通过i-1阶爬1步，也可以通过i-2阶爬2步
+    //3.确定dp数组初始化: dp[0] = 1; dp[1] = 1;
+    //4.确定遍历顺序: 从0-n级楼梯
+    //5.设计几个例子验证: dp[2] = dp[1] + dp[0]; dp[3] = dp[2] + dp[1]
+    std::vector<int> dp(n + 1, 0);
+    dp[0] = dp[1] = 1;
+    for(int i = 2; i < n + 1; ++i)
+    {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+    return dp[n];
+}
+
+int CodeCaprice::question746(std::vector<int>& cost)//使用最小花费爬楼梯
+{
+    //确定dp数组含义: dp[i]表示到第i阶楼梯的最小花费
+    //确定递推公式: dp[i] = min(dp[i - 1] + cost[i - 1], dp[i - 2] + cost[i - 2])
+    //初始化dp数组: dp[0] = 0, dp[1] = min(cost[0], 0), 因为可以从1出发，所以到1的代价可以为0
+    //确定遍历顺序: 0-cost.size()
+    //设计几个例子验证: dp[2] = min(dp[1] + cost[1], dp[0] + cost[0])
+    std::vector<int> dp(cost.size() + 1, 0);
+    dp[0] = 0;
+    dp[1] = cost[0];
+    for(int i = 2; i < cost.size() + 1; ++i)
+    {
+        dp[i] = std::min(dp[i - 1], dp[i - 2]);
+    }
+    return dp[cost.size()];
+}
+
+int CodeCaprice::question62(int m, int n)//不同路径
+{
+    //确定dp数组含义：dp[i][j]表示从左上角走到位置[i][j]共有几种路径
+    //确定递推公式：dp[i][j] = dp[i - 1][j] + dp[i][j - 1]；边界条件：i == 0 || j == 0，dp[0][j] = dp[0][j-1], dp[i] = dp[i - 1][0]
+    //确定dp数组初始化：dp[0][0] = 1
+    //确定遍历顺序：双循环遍历
+    //设计几个例子递推：dp[0][0] = 1, dp[0][1] = 1, dp[1][1] = dp[0][1] + dp[1][0] = 1 + 1
+    std::vector<std::vector<int>> dp(m, std::vector<int>(n, 0));
+    dp[0][0] = 1;
+    for(int i = 0; i < m; ++i)
+    {
+        for(int j = 0; j < n; ++j)
+        {
+            if(i == 0 && j == 0) dp[i][j] = 1;
+            else if(i == 0) dp[i][j] = dp[i][j - 1];
+            else if(j == 0) dp[i][j] = dp[i - 1][j];
+            else dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        }
+    }
+    return dp[m - 1][n - 1];
+}
+
+int CodeCaprice::question63(std::vector<std::vector<int>>& obstacleGrid)//不同路径II
+{
+    //确定dp数组含义：dp[i][j]表示从左上角走到位置[i][j]共有几种路径
+    //确定递推公式：dp[i][j] = dp[i - 1][j] + dp[i][j - 1]；
+    //  边界条件：i == 0 || j == 0，dp[0][j] = dp[0][j-1], dp[i] = dp[i - 1][0]
+    //          obstacleGrid[i][j] == 1 dp[i][j] = 0;
+    //确定dp数组初始化：dp[0][0] = 1
+    //确定遍历顺序：双循环遍历
+    //设计几个例子递推：dp[0][0] = 1, dp[0][1] = 1, dp[1][1] = dp[0][1] + dp[1][0] = 1 + 1
+    int m = obstacleGrid.size();
+    int n = obstacleGrid[0].size();
+    std::vector<std::vector<int>> dp(m, std::vector<int>(n, 0));
+    for(int i = 0; i < m; ++i)
+    {
+        for(int j = 0; j < n; ++j)
+        {
+            if(obstacleGrid[i][j] == 1)
+                dp[i][j] = 0;
+            else
+            {
+                if(i == 0 && j == 0) dp[i][j] = 1;
+                else if(i == 0) dp[i][j] = dp[i][j - 1];
+                else if(j == 0) dp[i][j] = dp[i - 1][j];
+                else dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+    }
+    return dp[m - 1][n - 1];
+}
+
+int CodeCaprice::question343(int n)//整数拆分
+{
+    //dp数组的定义：dp[i]表示拆分整数i得到的最大乘积
+    //dp的递推公式：dp[i] = max(j * (i - j), j * dp[i - j])
+    //dp的初始条件：dp[0] = 0, dp[1] = 1, dp[2] = 1
+    //dp的遍历顺序：
+    //设计几个例子：
+    std::vector<int> dp(n + 1, 0);
+    dp[0] = dp[1] = 0;
+    for(int i = 2; i < n + 1; ++i)
+    {
+        for(int j = 1; j <= i / 2; ++j)
+        {
+            dp[i] = std::max(dp[i], std::max(j * (i - j), j * dp[i - j]));
+        }
+    }
+    return dp[n];
+}
+
+
+int CodeCaprice::question96(int n)//不同的二叉搜索树
+{
+    //dp数组的定义：dp[i]表示节点数为i的二叉搜索树数量
+    //dp的递推公式：dp[i] = \sigma dp[j - 1] * dp[n - j]
+    //dp的初始条件：dp[0] = dp[1] = 1
+    //dp的遍历顺序：以j为根节点编号，j到i遍历
+    //设计几个例子：
+    std::vector<int> dp(n + 1, 0);
+    dp[0] = dp[1] = 1;
+    for(int i = 2; i < n + 1; ++i)
+    {
+        for(int j = 1; j <= i; ++j)//以j为根节点的二叉搜索树
+        {
+            dp[i] += dp[j - 1] * dp[i - j];
+        }
+    }
+    return dp[n];
+}
+
+void CodeCaprice::backpack_test(std::vector<int>& weights, std::vector<int>& vals, int& bag_weight)
+{
+    //确定dp数组含义：dp[i][j]表示标号为0~i的物品放到容量为j的背包中的最大收益
+    //确定dp数组递推关系：dp[i][j] = max(dp[i - 1][j], dp[i][j - weights[i]] + val[i])，表示放物品i和不放物品i的对比
+    //dp初始条件：都为0
+    //dp遍历顺序：正常两个for
+    std::vector<std::vector<int>> dp(weights.size(), std::vector<int>(bag_weight, 0));
+    for(int i = 0; i < weights.size(); ++i)
+    {
+        for(int j = 0; j < bag_weight; ++j)
+        {
+            if(j < weights[i]) dp[i][j] = dp[i - 1][j];
+            else dp[i][j] = std::max(dp[i - 1][j], dp[i - 1][j - weights[i]] + vals[i]);
+        }
+    }
 }
