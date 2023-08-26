@@ -12,7 +12,7 @@ int main()
 {
     CodeCaprice* codeCarprice = new CodeCaprice();
     RealQuestion* realQuestion = new RealQuestion();
-    realQuestion->weilai1();
+    realQuestion->dewu2();
 
     return 0;
 }

@@ -2049,7 +2049,7 @@ void CodeCaprice::backpack_test(std::vector<int>& weights, std::vector<int>& val
     //dp初始条件：都为0
     //dp遍历顺序：正常两个for
     std::vector<std::vector<int>> dp(weights.size(), std::vector<int>(bag_weight, 0));
-    for(int i = 0; i < weights.size(); ++i)
+    for(int i = 1; i < weights.size(); ++i)
     {
         for(int j = 0; j < bag_weight; ++j)
         {

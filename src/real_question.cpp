@@ -402,18 +402,34 @@ void RealQuestion::meituan4()
     std::cout << count << std::endl;
 }
 
-void RealQuestion::dewu_helper2(std::vector<int>& nums, int& min_len, std::vector<int>& path, int target, int sum, int start_idx)
+void RealQuestion::dewu1()//开幕式排练
 {
-    if (sum == target) 
+//参演人员围成一圈，不希望某个人员身边其他人比他高太多或者矮太多，计算相邻演员身高差最大值
+//输入第一行1个正整数，表示人数n
+//第二行输入每个人的身高
+//输出一个整数，表示相邻身高差最大值
+    int n = 0;
+    std::cin >> n;
+    std::vector<int> heights(n, 0);
+    std::vector<int> ans(n, 0);
+    int res = std::numeric_limits<int>::min();
+    for(int i = 0; i < n; ++i)
     {
-        min_len = std::min(min_len, (int)path.size());
-        return;
+        std::cin >> heights[i];
     }
-    for (int i = start_idx; i < nums.size() && sum + nums[i] <= target; i++) {
-        path.push_back(nums[i]);
-        dewu_helper2(nums, min_len, path, target, sum + nums[i], i + 1);
-        path.pop_back();
+    std::sort(heights.begin(), heights.end());
+    for(int i = 0; i < n; ++i)
+    {
+        if(i % 2 == 0)
+            ans[i] = heights[i / 2];
+        else
+            ans[i] = heights[n - 1 - i / 2];
     }
+    for(int i = 0; i < n - 1; ++i)
+    {
+        res = std::max(res, std::abs(ans[i] - ans[i + 1]));
+    }
+    std::cout << res << std::endl;
 }
 
 void RealQuestion::dewu2()
@@ -421,29 +437,47 @@ void RealQuestion::dewu2()
     int n = 0;
     int m = 0;
     std::cin >> n >> m;
-    std::vector<int> nums;
-    std::unordered_map<int, int> map;
+    std::vector<int> nums(n, 0);
     for(int i = 0; i < n; ++i)
     {
-        int num;
-        std::cin >> num;
-        if(map.find(num) == map.end())
-        {
-            map[num]++;
-            nums.push_back(num);
-        }//把重复的去掉后，剩下一个组合的回溯问题
+        std::cin >> nums[i];
     }
     //从nums中选取若干个数字，使它们和等于m，不允许重复选取同一个数字或者相同的数字，若无解则输出No solution
-    int min_len = std::numeric_limits<int>::max();
-    std::vector<int> path;
-    dewu_helper2(nums, min_len, path, m, 0, 0);
-    if(min_len == std::numeric_limits<int>::max())
-    {
-        std::cout << "No solution" << std::endl;
-        return;
-    }
+    //int min_len = std::numeric_limits<int>::max();
+    //std::vector<int> path;
+    //dewu_helper2(nums, min_len, path, m, 0, 0);
+    //if(min_len == std::numeric_limits<int>::max())
+    //{
+    //    std::cout << "No solution" << std::endl;
+    //    return;
+    //}
 
-    std::cout << min_len << std::endl;
+    //std::cout << min_len << std::endl;
+    //用dp：
+    //1. dp数组含义：dp[i][j]表示标号为0~i的数字组成数字j的最少数字个数
+    //2. dp递推公式：dp[i] = min(dp[i - 1][j], dp[i - 1][j - nums[i]] + 1)
+    //3. dp初始条件：dp[0] = 0;
+    //4. dp遍历顺序：从前往后遍历
+    //5. 设计一两个例子
+
+    std::vector<std::vector<int>> dp(n, std::vector<int>(m + 1, 9999));
+    for(int i = 0; i < n; ++i)
+    {
+        dp[i][0] = 0;
+    }
+    dp[0][nums[0]] = 1;
+
+    for(int i = 1; i < n; ++i)
+    {
+        for(int j = 0; j <= m; ++j)
+        {
+            if(j < nums[i])
+                dp[i][j] = dp[i - 1][j];
+            else
+                dp[i][j] = std::min(dp[i - 1][j], dp[i - 1][j - nums[i]] + 1);
+        }
+    }
+    std::cout << dp[n - 1][m] << std::endl;
     return;
 }
 
@@ -536,4 +570,124 @@ int weilai3(std::vector<std::vector<int>>& grid)
         }
     }
     return fresh_cnt == 0 ? minutes : -1;
+}
+
+void xunfei2_helper2(UndirectedGraph* g, GraphNode* start_node, GraphNode* end_node, int& min_build)//bfs
+{
+    std::queue<GraphNode*> que;
+    que.push(start_node);
+    while(!que.empty())
+    {
+        int que_size = que.size();
+        for(int i = 0; i < que_size; ++i)
+        {
+            GraphNode* node = que.front();
+            que.pop();
+            if(node->id == end_node->id)
+            {
+                //min_build = std::min(min_build, node->build_cnt);
+                return;
+            }
+
+            for(int j = 0; j < node->neighbors.size(); ++j)
+            {
+                int neighbor_id = node->neighbors[j].neighbor;
+                int weight = node->neighbors[j].weight;
+                GraphNode* neighbor_node = g->get_node(neighbor_id);
+                if(neighbor_node->visited == true) continue;
+                neighbor_node->visited = true;
+                //neighbor_node->cost = node->cost + weight;
+                que.push(neighbor_node);
+            }
+        }
+    }
+}
+
+void xunfei2_helper(UndirectedGraph* g, GraphNode* start_node, GraphNode* end_node, int sum, int unbuild_sum, int& min_val, int& min_unbuild)
+{
+    if(start_node->id == end_node->id)
+    {
+        min_val = std::min(min_val, sum);
+        min_unbuild = std::min(min_unbuild, unbuild_sum);
+        return;
+    }
+    for(int i = 0; i < start_node->neighbors.size(); ++i)
+    {
+        int neighbor_id = start_node->neighbors[i].neighbor;
+        int weight = start_node->neighbors[i].weight;
+        GraphNode* neighbor_node = g->get_node(neighbor_id);
+        if(neighbor_node->visited == true) continue;
+        neighbor_node->visited = true;
+        if(start_node->neighbors[i].build == false)
+            xunfei2_helper(g, neighbor_node, end_node, sum + weight, unbuild_sum + weight, min_val, min_unbuild);
+        else
+            xunfei2_helper(g, neighbor_node, end_node, sum + weight, unbuild_sum, min_val, min_unbuild);
+        neighbor_node->visited = false;
+    }
+}
+
+void xunfei2()
+{
+    UndirectedGraph* g = new UndirectedGraph();
+    int n = 0;//n个点
+    int m = 0;//m条路线
+    int d = 0;//d条未建立的边
+    int A = 0;
+    int B = 0;
+    std::cin >> n >> m;
+    for(int i = 0; i < n; ++i)
+    {
+        g->add_node(i + 1, 0, 0);
+    }
+    for(int i = 0; i < m; ++i)
+    {
+        int u = 0;
+        int v = 0;
+        int w  = 0;
+        std::cin >> u >> v >> w;
+        g->add_edge(u, v, w);
+    }
+    std::cin >> d;
+    for(int i = 0; i < d; ++i)
+    {
+        int u = 0;
+        int v = 0;
+        std::cin >> u >> v;
+        for(int j = 0; j < g->nodes.size(); ++j)
+        {
+            if(g->nodes[j]->id == u)
+            {
+                for(int k = 0; k < g->nodes[j]->neighbors.size(); ++k)
+                {
+                    if(g->nodes[j]->neighbors[k].neighbor == v)
+                    {
+                        g->nodes[j]->neighbors[k].build = false;
+                    }
+                }
+            }
+            if(g->nodes[j]->id == v)
+            {
+                for(int k = 0; k < g->nodes[j]->neighbors.size(); ++k)
+                {
+                    if(g->nodes[j]->neighbors[k].neighbor == u)
+                    {
+                        g->nodes[j]->neighbors[k].build = false;
+                    }
+                }
+            }
+        }
+    }
+
+    std::cin >> A >> B;
+
+    //求从A到B的最短路径
+    int min_val = std::numeric_limits<int>::max();
+    int min_unbuild = std::numeric_limits<int>::max();
+    GraphNode* start_node = g->get_node(A);
+    GraphNode* end_node = g->get_node(B);
+    start_node->visited = true;
+    xunfei2_helper(g, start_node, end_node, 0, 0, min_val, min_unbuild);
+    start_node->visited = false;
+
+    std::cout << min_unbuild << std::endl;
 }

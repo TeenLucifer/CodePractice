@@ -68,12 +68,13 @@ public:
     void meituan3();
     void meituan4();
     void meituan5();
-    void dewu1();
-    void dewu_helper2(std::vector<int>& nums, int& min_len, std::vector<int>& path, int target, int sum, int start_idx);
+    void dewu1();//开幕式排练
     void dewu2(); 
 
     void weilai1();
     int weilai3(std::vector<std::vector<int>>& grid);
+
+    void xunfei2();
 private:
 
 };

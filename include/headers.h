@@ -74,6 +74,7 @@ class GraphEdge {
 public:
     int neighbor; // 邻居节点的标识
     int weight;   // 边的权重，如果不需要权重可以省略
+    bool build = true;//是否建立了边
 
     GraphEdge(int n, int w = 1) : neighbor(n), weight(w) {}
 };
